@@ -12,7 +12,7 @@ package gmf
 
 extern void call_log_callback(int level, char *msg);
 
-static void log_callback(void* callback, int level, const char *fmt, va_list a1) {
+static void gmf_log_callback(void* callback, int level, const char *fmt, va_list a1) {
     va_list a2;
     va_copy(a2, a1);
 
@@ -29,9 +29,9 @@ static void log_callback(void* callback, int level, const char *fmt, va_list a1)
     free(str);
 }
 
-static void set_log_callback() {
+static void gmf_set_log_callback() {
     fflush(stdout);
-    av_log_set_callback(log_callback);
+    av_log_set_callback(gmf_log_callback);
 }
 
 */
@@ -144,7 +144,7 @@ type LogCallback func(level LogLevel, msg string)
 func SetLogCallback(lb LogCallback) {
 	logCallback = lb
 
-	C.set_log_callback()
+	C.gmf_set_log_callback()
 }
 
 var logCallback LogCallback
