@@ -10,6 +10,31 @@ package gmf
 #include "libavutil/rational.h"
 #include "libavutil/samplefmt.h"
 
+extern void call_log_callback(int level, char *msg);
+
+static void log_callback(void* callback, int level, const char *fmt, va_list a1) {
+    va_list a2;
+    va_copy(a2, a1);
+
+    size_t length = (size_t)vsnprintf(0, 0, fmt, a1);
+
+    char *str = (char *)malloc(length + 1);
+
+    vsprintf(str, fmt, a2);
+
+    va_end(a2);
+
+    call_log_callback(level, str);
+
+    free(str);
+}
+
+static void set_log_callback() {
+    printf("A\n");
+    fflush(stdout);
+    av_log_set_callback(log_callback);
+}
+
 */
 import "C"
 
@@ -101,3 +126,33 @@ func GenSyntVideoNewFrame(w, h int, fmt int32) chan *Frame {
 	}()
 	return yield
 }
+
+type LogLevel int
+
+var (
+	LogLevelQuiet LogLevel = C.AV_LOG_QUIET
+	LogLevelPanic          = C.AV_LOG_PANIC
+	LogLevelFatal          = C.AV_LOG_FATAL
+	LogLevelError          = C.AV_LOG_ERROR
+	LogLevelWarning        = C.AV_LOG_WARNING
+	LogLevelInfo           = C.AV_LOG_INFO
+	LogLevelVerbose        = C.AV_LOG_VERBOSE
+	LogLevelDebug          = C.AV_LOG_VERBOSE
+)
+
+type LogCallback func(level LogLevel, msg string)
+
+func SetLogCallback(lb LogCallback) {
+	logCallback = lb
+
+	C.set_log_callback()
+}
+
+var logCallback LogCallback
+
+//export call_log_callback
+func call_log_callback(level C.int, msg *C.char) {
+	logCallback(LogLevel(level), C.GoString(msg))
+}
+
+
