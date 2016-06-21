@@ -30,7 +30,6 @@ static void log_callback(void* callback, int level, const char *fmt, va_list a1)
 }
 
 static void set_log_callback() {
-    printf("A\n");
     fflush(stdout);
     av_log_set_callback(log_callback);
 }
