@@ -129,15 +129,19 @@ func GenSyntVideoNewFrame(w, h int, fmt int32) chan *Frame {
 type LogLevel int
 
 var (
-	LogLevelQuiet LogLevel = C.AV_LOG_QUIET
-	LogLevelPanic          = C.AV_LOG_PANIC
-	LogLevelFatal          = C.AV_LOG_FATAL
-	LogLevelError          = C.AV_LOG_ERROR
-	LogLevelWarning        = C.AV_LOG_WARNING
-	LogLevelInfo           = C.AV_LOG_INFO
-	LogLevelVerbose        = C.AV_LOG_VERBOSE
-	LogLevelDebug          = C.AV_LOG_VERBOSE
+	LogLevelQuiet   LogLevel = C.AV_LOG_QUIET
+	LogLevelPanic   LogLevel = C.AV_LOG_PANIC
+	LogLevelFatal   LogLevel = C.AV_LOG_FATAL
+	LogLevelError   LogLevel = C.AV_LOG_ERROR
+	LogLevelWarning LogLevel = C.AV_LOG_WARNING
+	LogLevelInfo    LogLevel = C.AV_LOG_INFO
+	LogLevelVerbose LogLevel = C.AV_LOG_VERBOSE
+	LogLevelDebug   LogLevel = C.AV_LOG_VERBOSE
 )
+
+func SetLogLevel(level LogLevel) {
+	C.av_log_set_level(C.int(level))
+}
 
 type LogCallback func(level LogLevel, msg string)
 
@@ -153,5 +157,3 @@ var logCallback LogCallback
 func call_log_callback(level C.int, msg *C.char) {
 	logCallback(LogLevel(level), C.GoString(msg))
 }
-
-
