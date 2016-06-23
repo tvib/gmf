@@ -28,6 +28,21 @@ int gmf_get_frame_line_size(AVFrame *frame, int idx) {
 	return frame->linesize[idx];
 }
 
+void gmf_print_yuf(AVFrame *frame) {
+    int y;
+
+	for (y = 0; y < frame->height; y++) {
+		fwrite(frame->data[0] + y*frame->linesize[0], 1, frame->width, stdout);
+	}
+
+	for (y = 0; y < frame->height / 2; y++) {
+		fwrite(frame->data[1] + y*frame->linesize[1], 1, frame->width / 2, stdout);
+	}
+
+	for (y = 0; y < frame->height / 2; y++) {
+		fwrite(frame->data[2] + y*frame->linesize[2], 1, frame->width / 2, stdout);
+	}
+}
 */
 import "C"
 
@@ -246,4 +261,21 @@ func (this *Frame) SetChannels(val int) *Frame {
 func (this *Frame) SetQuality(val int) *Frame {
 	this.avFrame.quality = C.int(val)
 	return this
+}
+
+func (this *Frame) Print() {
+	format := int32(this.Format())
+
+	yuf :=
+		format == AV_PIX_FMT_YUV410P ||
+		format == AV_PIX_FMT_YUV411P ||
+		format == AV_PIX_FMT_YUV420P ||
+		format == AV_PIX_FMT_YUV422P ||
+		format == AV_PIX_FMT_YUV444P ||
+		format == AV_PIX_FMT_YUVJ420P ||
+		format == AV_PIX_FMT_YUVJ420P
+
+	if yuf {
+		C.gmf_print_yuf(this.avFrame)
+	}
 }
