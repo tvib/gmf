@@ -108,3 +108,7 @@ func (this *Stream) IsVideo() bool {
 func (this *Stream) Duration() int64 {
 	return int64(this.avStream.duration)
 }
+
+func (this *Stream) FrameRate() float64 {
+	return float64(this.avStream.avg_frame_rate.num / this.avStream.avg_frame_rate.den)
+}
