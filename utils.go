@@ -30,7 +30,6 @@ static void gmf_log_callback(void* callback, int level, const char *fmt, va_list
 }
 
 static void gmf_set_log_callback() {
-    fflush(stdout);
     av_log_set_callback(gmf_log_callback);
 }
 
