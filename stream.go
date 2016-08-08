@@ -52,6 +52,7 @@ func (this *Stream) CodecCtx() *CodecCtx {
 	this.cc = &CodecCtx{
 		codec:      c,
 		avCodecCtx: this.avStream.codec,
+		frames:     map[int32]*Frame{},
 	}
 
 	this.cc.Open(nil)

@@ -102,6 +102,7 @@ type SampleFmt int
 type CodecCtx struct {
 	codec      *Codec
 	avCodecCtx *C.struct_AVCodecContext
+	frames     map[int32]*Frame
 	CgoMemoryManage
 }
 
@@ -116,6 +117,8 @@ func NewCodecCtx(codec *Codec, options ...[]*Option) *CodecCtx {
 	C.avcodec_get_context_defaults3(codecctx, codec.avCodec)
 
 	result.avCodecCtx = codecctx
+
+	result.frames = map[int32]*Frame{}
 
 	// we're really expecting only one options-array —
 	// variadic arg is used for backward compatibility

@@ -22,14 +22,6 @@ import (
 	"unsafe"
 )
 
-// In cause of this:
-//  > AVFrame is typically allocated once and then reused multiple times to hold
-//  > different data (e.g. a single AVFrame to hold frames received from a
-//  > decoder).
-// this stuff with map of singletons is used.
-//
-var frames map[int32]*Frame = make(map[int32]*Frame, 0)
-
 type Packet struct {
 	avPacket C.struct_AVPacket
 	CgoMemoryManage
@@ -51,13 +43,13 @@ func (this *Packet) Decode(cc *CodecCtx) (*Frame, bool, int, error) {
 	var gotOutput int
 	var ret int = 0
 
-	if frames[cc.Type()] == nil {
-		frames[cc.Type()] = &Frame{avFrame: C.av_frame_alloc(), mediaType: cc.Type()}
+	if cc.frames[cc.Type()] == nil {
+		cc.frames[cc.Type()] = &Frame{avFrame: C.av_frame_alloc(), mediaType: cc.Type()}
 	}
 
 	switch cc.Type() {
 	case AVMEDIA_TYPE_AUDIO:
-		ret = int(C.avcodec_decode_audio4(cc.avCodecCtx, frames[AVMEDIA_TYPE_AUDIO].avFrame, (*C.int)(unsafe.Pointer(&gotOutput)), &this.avPacket))
+		ret = int(C.avcodec_decode_audio4(cc.avCodecCtx, cc.frames[AVMEDIA_TYPE_AUDIO].avFrame, (*C.int)(unsafe.Pointer(&gotOutput)), &this.avPacket))
 		if ret < 0 {
 			return nil, false, int(ret), errors.New(fmt.Sprintf("Unable to decode audio packet, averror: %s", AvError(int(ret))))
 		}
@@ -65,7 +57,7 @@ func (this *Packet) Decode(cc *CodecCtx) (*Frame, bool, int, error) {
 		break
 
 	case AVMEDIA_TYPE_VIDEO:
-		ret = int(C.avcodec_decode_video2(cc.avCodecCtx, frames[AVMEDIA_TYPE_VIDEO].avFrame, (*C.int)(unsafe.Pointer(&gotOutput)), &this.avPacket))
+		ret = int(C.avcodec_decode_video2(cc.avCodecCtx, cc.frames[AVMEDIA_TYPE_VIDEO].avFrame, (*C.int)(unsafe.Pointer(&gotOutput)), &this.avPacket))
 		if ret < 0 {
 			return nil, false, int(ret), errors.New(fmt.Sprintf("Unable to decode video packet, averror: %s", AvError(int(ret))))
 		}
@@ -76,7 +68,7 @@ func (this *Packet) Decode(cc *CodecCtx) (*Frame, bool, int, error) {
 		return nil, false, int(ret), errors.New(fmt.Sprintf("Unknown codec type: %v", cc.Type()))
 	}
 
-	return frames[cc.Type()], (gotOutput > 0), int(ret), nil
+	return cc.frames[cc.Type()], (gotOutput > 0), int(ret), nil
 }
 
 func (this *Packet) DecodeToNewFrame(cc *CodecCtx) (*Frame, bool, int, error) {
